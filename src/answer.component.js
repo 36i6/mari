@@ -11,21 +11,19 @@ const parse = require("html-react-parser");
 const json = require("./aa.json");
 
 export const Answer = (props) => {
-  let title;
   let [state, setState] = useState("input");
   let [person, setPerson] = useState("meet");
   let [botMsg, setBotMsg] = useState(0);
   const [desicion, setDesicion] = useState("");
   const [username, setUsername] = useState("");
-  const [vars, setVars] = useState(0);
-  let inpId;
+  const [vars, setVars] = useState(-1);
+  const [btnState, setBtnState] = useState(false);
   let inp;
   let chat;
   const messageEndRef = createRef();
   const textareaRef = useRef(null);
-  const [currentValue, setCurrentValue] = useState(json[person].userMessage[0]);
-  const [referred, setReferred] = useState(-1);
-  const [currentValueId, setCurrentValueId] = useState(0);
+  const [currentValue, setCurrentValue] = useState("");
+  const [currentTipId, setCurrentTipId] = useState(0);
 
   const scrollToBottom = () => {
     messageEndRef.current?.scrollIntoView({
@@ -34,43 +32,50 @@ export const Answer = (props) => {
   };
 
   useEffect(() => {
-    console.log("Current", currentValue);
+    console.log("useEffect setDesicion", desicion);
+  }, [desicion]);
+
+  useEffect(() => {
+    console.log("useEffect setCV", currentValue);
     if (currentValue.includes("$")) {
-      setCurrentValue(
-        json[person].userMessage[
-          json[person].userMessage.indexOf(currentValue) + 1
-        ]
-      );
+      console.log("useEffect setCV if $ in CV");
+      setCurrentValue("");
       document.getElementById("#inpt").disabled = false;
-      scrollToBottom();
+      setBtnState(true);
     }
     if (currentValue.includes("/v/")) {
+      console.log("useEffect setCV if /v/ in CV");
+      setDesicion(currentValue);
       setCurrentValue(currentValue.replace("/v/", ""));
-      scrollToBottom();
     }
-  }, [currentValue, person]);
+    if (currentValue.includes("/e/")) {
+      console.log("useEffect setCV if /e/ in CV");
+      setDesicion(currentValue);
+      setCurrentValue(currentValue.replace("/e/", ""));
+    }
+  }, [currentValue]);
 
   useEffect(() => {
-    if (json[person].userMessage.includes(currentValue)) {
-      setCurrentValueId(json[person].userMessage.indexOf(currentValue));
-    }
-  }, [currentValue, person]);
-
-  useEffect(() => {
+    console.log("useEffect next=>sendByBot");
     sendByBot(botMsg);
     scrollToBottom();
   }, [botMsg]);
 
   useEffect(() => {
-    setCurrentValueId(0);
-    setCurrentValue(json[person].userMessage[0]);
+    console.log("useEffect setPerson");
     scrollToBottom();
   }, [person]);
 
   useEffect(() => {
-    textareaRef.current.style.height = "0px";
-    const scrollHeight = textareaRef.current.scrollHeight - 15;
-    textareaRef.current.style.height = scrollHeight + "px";
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "0px";
+      const scrollHeight = textareaRef.current.scrollHeight - 15;
+      textareaRef.current.style.height = scrollHeight + "px";
+      if (!textareaRef.current.value) {
+        // console.log("VALUE", textareaRef.current.value);
+        // document.getElementById("snd").disabled = true;
+      }
+    }
   }, [currentValue]);
 
   const messageHTML = function (value) {
@@ -91,58 +96,75 @@ export const Answer = (props) => {
 
   const botMessageHTML = function (value) {
     setState("input");
-    if (!value) {
-      setBotMsg(0);
-      scrollToBottom();
-      return;
-    }
+    console.log('botMessageHTML setState("input")');
     const avatarClass = "message_botAvatar avatar";
     const messageClass = "message_botMessage";
     if (value.includes("/$/")) {
       value = value.replace("/$/", username);
-      scrollToBottom();
     }
     if (value.includes("/</")) {
       value = value.replace("/</", "");
-      setCurrentValue(
-        json[person].userMessage[json[person].userMessage.indexOf("") + 1]
-      );
       document.getElementById("#inpt").disabled = true;
+      setBtnState(false);
       scrollToBottom();
     }
-    if (value.includes("/v/")) {
-      value = value.replace("/v/", "");
-      setCurrentValue(json[person].userMessage[currentValueId + 1]);
-      scrollToBottom();
-    }
+
     if (value.includes("/&/")) {
       value = value.replace("/&/", "");
-      setBotMsg(botMsg + 1);
+      setCurrentValue("");
       scrollToBottom();
     }
 
     if (value.includes("/@/")) {
       value = value.replace("/@/", "");
       setState("choose");
+      console.log("setState choose");
       setVars(vars + 1);
-      scrollToBottom();
-    }
-    if (value.includes("/>/")) {
-      value = value.replace("/>/", "");
-      console.log("DAAAAA BLYATG");
-      person === "meet" ? setPerson("sobes") : setPerson("meet");
-      setVars(0);
-      setDesicion("");
-      setBotMsg(0);
-      console.log(person, vars, botMsg, state);
-      scrollToBottom();
-    }
-    if (value.includes("<strong>")) {
-      value = parse(value);
-      scrollToBottom();
-      console.log(value);
     }
 
+    if (value.includes("/e/")) {
+      value = value.replace("/e/", "");
+      setCurrentValue(desicion);
+      console.log("value includes /e/, setCurrentValue(desicion)");
+    }
+
+    if (value.includes("/p/")) {
+      return primingHTML(json[person].priming[0]);
+    }
+
+    if (value.includes("/t/")) {
+      value = value.replace("/t/", "");
+      setTimeout(() => {
+        chat.insertAdjacentHTML(
+          "beforeend",
+          tipHTML(json[person].referredTips[currentTipId])
+        );
+        scrollToBottom();
+        console.log("sendChosen send tip");
+        // if (currentTipId === json[person].referredTips.length - 1) {
+        //   chat.insertAdjacentHTML(
+        //     "beforeend",
+        //     primingHTML(json[person].priming[0])
+        //   );
+        // } else {
+        //   setCurrentTipId(currentTipId + 1);
+        // }
+        setCurrentTipId(currentTipId + 1);
+      }, 500);
+    }
+
+    // if (value.includes("/>/")) {
+    //   value = value.replace("/>/", "");
+    //   person === "meet" ? setPerson("sobes") : setPerson("meet");
+    //   setVars(-1);
+    //   setDesicion("");
+    //   setCurrentValue("");
+    //   setBotMsg(0);
+    //   scrollToBottom();
+    // }
+    if (value.includes("<strong>")) {
+      value = parse(value);
+    }
     return ReactDOMServer.renderToString(
       <div className="message">
         <div className={avatarClass}>
@@ -167,11 +189,20 @@ export const Answer = (props) => {
     );
   };
 
+  const primingHTML = function (value) {
+    return ReactDOMServer.renderToString(
+      <div className="priming">
+        <p className="priming_title">«Примечания»</p>
+        <p className="priming_body">{value}</p>
+      </div>
+    );
+  };
+
   const sendByBot = function (botMsg) {
     if (
       json[person].org[botMsg] === json[person].org[json[person].org.length - 1]
     ) {
-      console.log("SLEDUJUSCHSIY");
+      console.log("Strannaya usloviya");
     }
     chat = document.getElementById("#chat");
     if (botMsg === 0) {
@@ -183,102 +214,158 @@ export const Answer = (props) => {
         "beforeend",
         botMessageHTML(json[person].org[botMsg])
       );
+      console.log(
+        "sendByBot setTimeout send botMessageHTML(json[person].org[botMSG])"
+      );
       scrollToBottom();
+      setTimeout(() => {
+        if (botMsg === 0) {
+          setCurrentValue(json[person].userMessage[0]);
+        }
+        if (
+          !json[person].userMessage[
+            json[person].userMessage.indexOf(desicion) + 1
+          ]
+        ) {
+          console.log(
+            "sendByBot setTimeout^^ no next userMessage index of desicion"
+          );
+        } else {
+          if (!json[person].org[botMsg].includes("/&/")) {
+            console.log(
+              "sendByBot setTimeout^^ json[person].org[botMsg] no includes /&/"
+            );
+            if (!json[person].org[botMsg - 1].includes("/@/")) {
+              console.log(
+                "sendByBot setTimeout^^ json[person].org[botMsg - 1] no includes /@/",
+                state
+              );
+              if (state === "input") {
+                setCurrentValue(
+                  json[person].userMessage[
+                    json[person].userMessage.indexOf(desicion) + 1
+                  ]
+                );
+              }
+
+              console.log(
+                "sendByBot setTimeout^^ setCurrentValue json[person].userMessage[desicion + 1]"
+              );
+            }
+          }
+        }
+      }, 500);
     }, 500);
     scrollToBottom();
   };
 
   const sendAnswer = function () {
     setState("input");
+
+    console.log('sendAnswer setState("input")');
     inp = document.getElementById("#inpt");
-    chat = document.getElementById("#chat");
-    if (inp.value.includes("/t/")) {
-      inp.value = inp.value.replace("/t/", "");
-      chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
+    if (!inp.disabled) {
+      inp.disabled = true;
+      setCurrentValue("");
+      setBtnState(false);
+      setUsername(inp.value);
+      setDesicion("$");
+      console.log('sendAnswer disabled input setDesicion("$")');
     } else {
-      chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
-    }
-
-    scrollToBottom();
-
-    setDesicion(inp.value);
-
-    if (json[person].org[botMsg + 1].includes("$")) {
-      if (username === "") {
-        setUsername(inp.value);
-        scrollToBottom();
-      }
-    }
-    setBotMsg(botMsg + 1);
-    scrollToBottom();
-
-    if (!json[person].userMessage.includes(currentValue)) {
-      console.log(currentValue);
-      if (!document.getElementById("#inpt").disabled) {
-        console.log("Here is not disabled");
-        setCurrentValue(
-          json[person].userMessage[json[person].userMessage.indexOf("") + 1]
-        );
-        scrollToBottom();
+      console.log();
+      if (desicion.includes("/v/")) {
+        setCurrentValue("");
+        console.log('sendAnswer enabled desicion includes /v/ setCV("")');
       } else {
-        setCurrentValue(json[person].userMessage[currentValueId]);
+        setDesicion(inp.value);
+        setCurrentValue("");
+        console.log(
+          "sendAnswer enabled desicion !includes /v/ setDesicion(inp.value)"
+        );
+      }
+    }
+
+    chat = document.getElementById("#chat");
+    if (inp.value) {
+      if (inp.value.includes("/t/")) {
+        inp.value = inp.value.replace("/t/", "");
+        chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
+        scrollToBottom();
+        setTimeout(() => {
+          chat.insertAdjacentHTML(
+            "beforeend",
+            tipHTML(json[person].referredTips[currentTipId])
+          );
+          scrollToBottom();
+          // console.log("sendChosen send tip");
+          // if (currentTipId === json[person].referredTips.length - 1) {
+          //   chat.insertAdjacentHTML(
+          //     "beforeend",
+          //     primingHTML(json[person].priming[0])
+          //   );
+          // } else {
+
+          // }
+          setCurrentTipId(currentTipId + 1);
+        }, 500);
+      } else {
+        chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
         scrollToBottom();
       }
-    } else {
-      setCurrentValue(
-        json[person].userMessage[
-          json[person].userMessage.indexOf(currentValue) + 1
-        ]
-      );
-      scrollToBottom();
     }
+
+    console.log("sendAnswer send inp.value");
+    scrollToBottom();
+
+    setBotMsg(botMsg + 1);
+    console.log("sendAnswer setBotMsg(botmsg + 1)");
+    scrollToBottom();
   };
 
   const sendChosen = function () {
     inp = document.querySelector('input[name="name"]:checked');
-    if (currentValueId === json[person].userMessage.length - 1) {
-      setCurrentValueId(0);
-      setCurrentValue("");
-      scrollToBottom();
-    }
-    console.log(inp.id, person, vars);
     const tip = json[person].tips[vars][inp.id - 1];
-    setDesicion(inp.id);
+    console.log("sendChosen set tip to json[person].tips[vars][idChosen]");
     setState("input");
+    setCurrentValue("");
     chat = document.getElementById("#chat");
     chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
+    console.log("sendChosen send messageHTML(chosenValue)");
     scrollToBottom();
     setTimeout(() => {
       chat.insertAdjacentHTML("beforeend", tipHTML(tip));
       scrollToBottom();
+      console.log("sendChosen send tip");
     }, 1000);
     setTimeout(() => {
       if (vars === json[person].tips.length - 1) {
-        setVars(0);
+        setVars(-1);
+        console.log("sendChosen setTimeout last vars setVars-1");
         setBotMsg(botMsg + 1);
+        console.log("sendChosen setTimeout last vars setBotMsg+1");
         scrollToBottom();
+        // setState("input");
       } else {
+        console.log("sendChosen setTimeout !last vars");
         setBotMsg(botMsg + 1);
         scrollToBottom();
       }
     }, 1000);
     scrollToBottom();
-
-    console.log(state, vars);
+    // setState("input");
+    // console.log('sendChosen setState("input")');
   };
 
   const theNext = function () {
-    console.log("HERE", vars, desicion, botMsg);
-    setCurrentValueId(0);
-    setCurrentValue(json[person].userMessage[0]);
-    setVars(0);
+    person === "meet" ? setPerson("sobes") : setPerson("meet");
+    setVars(-1);
     setDesicion("");
+    setCurrentValue("");
     setBotMsg(0);
     scrollToBottom();
   };
 
   const inputOrChoice = (state) => {
-    console.log(state, desicion, vars, botMsg);
     if (!(state === "input")) {
       return (
         <div className="input_variants">
@@ -289,7 +376,6 @@ export const Answer = (props) => {
           </div>
           <div className="variants_values">
             {json[person].user[vars].map((v, i) => {
-              console.log(i, v);
               return (
                 <div className="value">
                   <input type="radio" id={i + 1} name="name" value={v} />
@@ -301,7 +387,7 @@ export const Answer = (props) => {
           <button
             className="send"
             id="snd"
-            onClick={!json[person].org[botMsg + 1] ? theNext : sendChosen}
+            onClick={!json["meet"].org[botMsg + 1] ? theNext : sendChosen}
           >
             Отправить
           </button>
@@ -328,8 +414,9 @@ export const Answer = (props) => {
             className="send"
             id="snd"
             onClick={!json[person].org[botMsg + 1] ? theNext : sendAnswer}
+            // disabled={true}
           >
-            {!json[person].org[botMsg + 1] ? "Продолжить" : "Отправить"}
+            {btnState ? "Отправить" : "Продолжить"}
           </button>
         </>
       );

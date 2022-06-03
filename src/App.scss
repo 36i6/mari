@@ -187,6 +187,18 @@ html {
   }
 }
 
+.priming {
+  background-color: #ea5a114d;
+  width: 80%;
+  padding: 2rem;
+  &_title {
+    margin-bottom: 2rem;
+  }
+  &_body {
+    margin-bottom: 3rem;
+  }
+}
+
 .send {
   float: right;
   border-radius: 5px;
