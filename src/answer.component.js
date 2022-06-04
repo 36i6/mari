@@ -18,6 +18,7 @@ export const Answer = (props) => {
   const [username, setUsername] = useState("");
   const [vars, setVars] = useState(-1);
   const [btnState, setBtnState] = useState(false);
+  const [disabledBtn, setDisabledBtn] = useState(false);
   let inp;
   let chat;
   const messageEndRef = createRef();
@@ -42,16 +43,19 @@ export const Answer = (props) => {
       setCurrentValue("");
       document.getElementById("#inpt").disabled = false;
       setBtnState(true);
+      setDisabledBtn(false);
     }
     if (currentValue.includes("/v/")) {
       console.log("useEffect setCV if /v/ in CV");
       setDesicion(currentValue);
       setCurrentValue(currentValue.replace("/v/", ""));
+      setDisabledBtn(false);
     }
     if (currentValue.includes("/e/")) {
       console.log("useEffect setCV if /e/ in CV");
       setDesicion(currentValue);
       setCurrentValue(currentValue.replace("/e/", ""));
+      setDisabledBtn(false);
     }
   }, [currentValue]);
 
@@ -112,6 +116,7 @@ export const Answer = (props) => {
     if (value.includes("/&/")) {
       value = value.replace("/&/", "");
       setCurrentValue("");
+      setDisabledBtn(false);
       scrollToBottom();
     }
 
@@ -125,6 +130,7 @@ export const Answer = (props) => {
     if (value.includes("/e/")) {
       value = value.replace("/e/", "");
       setCurrentValue(desicion);
+      setDisabledBtn(false);
       console.log("value includes /e/, setCurrentValue(desicion)");
     }
 
@@ -221,6 +227,7 @@ export const Answer = (props) => {
       setTimeout(() => {
         if (botMsg === 0) {
           setCurrentValue(json[person].userMessage[0]);
+          setDisabledBtn(false);
         }
         if (
           !json[person].userMessage[
@@ -246,6 +253,7 @@ export const Answer = (props) => {
                     json[person].userMessage.indexOf(desicion) + 1
                   ]
                 );
+                setDisabledBtn(false);
               }
 
               console.log(
@@ -260,8 +268,9 @@ export const Answer = (props) => {
   };
 
   const sendAnswer = function () {
+    setDisabledBtn(true);
+    document.getElementById("snd").disabled = true;
     setState("input");
-
     console.log('sendAnswer setState("input")');
     inp = document.getElementById("#inpt");
     if (!inp.disabled) {
@@ -323,6 +332,8 @@ export const Answer = (props) => {
   };
 
   const sendChosen = function () {
+    setDisabledBtn(true);
+    document.getElementById("snd").disabled = true;
     inp = document.querySelector('input[name="name"]:checked');
     const tip = json[person].tips[vars][inp.id - 1];
     console.log("sendChosen set tip to json[person].tips[vars][idChosen]");
@@ -332,25 +343,31 @@ export const Answer = (props) => {
     chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
     console.log("sendChosen send messageHTML(chosenValue)");
     scrollToBottom();
-    setTimeout(() => {
-      chat.insertAdjacentHTML("beforeend", tipHTML(tip));
+    if (!json[person].user[0].includes(inp.value)) {
+      setTimeout(() => {
+        chat.insertAdjacentHTML("beforeend", tipHTML(tip));
+        scrollToBottom();
+        console.log("sendChosen send tip");
+      }, 1000);
+      setTimeout(() => {
+        if (vars === json[person].tips.length - 1) {
+          setVars(-1);
+          console.log("sendChosen setTimeout last vars setVars-1");
+          setBotMsg(botMsg + 1);
+          console.log("sendChosen setTimeout last vars setBotMsg+1");
+          scrollToBottom();
+          // setState("input");
+        } else {
+          console.log("sendChosen setTimeout !last vars");
+          setBotMsg(botMsg + 1);
+          scrollToBottom();
+        }
+      }, 1000);
+    } else {
+      setBotMsg(botMsg + 1);
       scrollToBottom();
-      console.log("sendChosen send tip");
-    }, 1000);
-    setTimeout(() => {
-      if (vars === json[person].tips.length - 1) {
-        setVars(-1);
-        console.log("sendChosen setTimeout last vars setVars-1");
-        setBotMsg(botMsg + 1);
-        console.log("sendChosen setTimeout last vars setBotMsg+1");
-        scrollToBottom();
-        // setState("input");
-      } else {
-        console.log("sendChosen setTimeout !last vars");
-        setBotMsg(botMsg + 1);
-        scrollToBottom();
-      }
-    }, 1000);
+    }
+
     scrollToBottom();
     // setState("input");
     // console.log('sendChosen setState("input")');
@@ -387,6 +404,7 @@ export const Answer = (props) => {
           <button
             className="send"
             id="snd"
+            disabled={false}
             onClick={!json["meet"].org[botMsg + 1] ? theNext : sendChosen}
           >
             Отправить
@@ -414,7 +432,9 @@ export const Answer = (props) => {
             className="send"
             id="snd"
             onClick={!json[person].org[botMsg + 1] ? theNext : sendAnswer}
-            // disabled={true}
+            disabled={
+              disabledBtn ? !!json[person].org[botMsg + 1] : disabledBtn
+            }
           >
             {btnState ? "Отправить" : "Продолжить"}
           </button>
