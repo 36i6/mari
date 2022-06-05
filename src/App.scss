@@ -161,7 +161,8 @@ html {
       -ms-overflow-style: none;
       scrollbar-width: none;
       @media (max-width: 468px) {
-        padding: 1rem;
+        padding: 0.4rem;
+        font-size: medium;
       }
     }
   }
