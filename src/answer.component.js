@@ -18,7 +18,8 @@ export const Answer = (props) => {
   const [username, setUsername] = useState("");
   const [vars, setVars] = useState(-1);
   const [btnState, setBtnState] = useState(false);
-  const [disabledBtn, setDisabledBtn] = useState(false);
+  const [disabledBtn, setDisabledBtn] = useState(true);
+  const [textareaChange, setTextareaChange] = useState(false);
   let inp;
   let chat;
   const messageEndRef = createRef();
@@ -53,10 +54,17 @@ export const Answer = (props) => {
     }
     if (currentValue.includes("/e/")) {
       console.log("useEffect setCV if /e/ in CV");
-      setDesicion(currentValue);
+      // setDesicion(currentValue);
+      console.log(desicion);
       setCurrentValue(currentValue.replace("/e/", ""));
       setDisabledBtn(false);
     }
+    // if (currentValue.includes("/t/")) {
+    //   console.log("useEffect setCV if /e/ in CV");
+    //   setDesicion(currentValue);
+    //   setCurrentValue(currentValue.replace("/t/", ""));
+    //   setDisabledBtn(false);
+    // }
   }, [currentValue]);
 
   useEffect(() => {
@@ -125,6 +133,7 @@ export const Answer = (props) => {
       setState("choose");
       console.log("setState choose");
       setVars(vars + 1);
+      scrollToBottom();
     }
 
     if (value.includes("/e/")) {
@@ -132,6 +141,7 @@ export const Answer = (props) => {
       setCurrentValue(desicion);
       setDisabledBtn(false);
       console.log("value includes /e/, setCurrentValue(desicion)");
+      scrollToBottom();
     }
 
     if (value.includes("/p/")) {
@@ -145,18 +155,11 @@ export const Answer = (props) => {
           "beforeend",
           tipHTML(json[person].referredTips[currentTipId])
         );
-        scrollToBottom();
+        // scrollToBottom();
         console.log("sendChosen send tip");
-        // if (currentTipId === json[person].referredTips.length - 1) {
-        //   chat.insertAdjacentHTML(
-        //     "beforeend",
-        //     primingHTML(json[person].priming[0])
-        //   );
-        // } else {
-        //   setCurrentTipId(currentTipId + 1);
-        // }
         setCurrentTipId(currentTipId + 1);
       }, 500);
+      scrollToBottom();
     }
 
     // if (value.includes("/>/")) {
@@ -277,7 +280,7 @@ export const Answer = (props) => {
       inp.disabled = true;
       setCurrentValue("");
       setBtnState(false);
-      setUsername(inp.value);
+      setUsername(inp.value + "Аноним");
       setDesicion("$");
       console.log('sendAnswer disabled input setDesicion("$")');
     } else {
@@ -424,6 +427,7 @@ export const Answer = (props) => {
                 disabled={true}
                 onChange={(e) => {
                   setCurrentValue(e.target.value);
+                  console.log("e target", textareaChange);
                 }}
               />
             )}
