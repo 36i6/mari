@@ -26,13 +26,13 @@ export const Chat = () => {
   const [currentValue, setCurrentValue] = useState("");
   const [currentTipId, setCurrentTipId] = useState(0);
 
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === "Enter") {
-      if (document.getElementById("snd")) {
-        document.getElementById("snd").click();
-      }
-    }
-  }, []);
+  // const handleKeyPress = useCallback((e) => {
+  //   if (e.key === "Enter") {
+  //     if (document.getElementById("snd")) {
+  //       document.getElementById("snd").click();
+  //     }
+  //   }
+  // }, []);
 
   const scrollToBottom = () => {
     messageEndRef.current?.scrollIntoView({
@@ -94,12 +94,12 @@ export const Chat = () => {
     }
   }, [currentValue]);
 
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyPress);
-    return (() => {
-      document.removeEventListener("keydown", handleKeyPress);
-    })();
-  }, [handleKeyPress]);
+  // useEffect(() => {
+  //   document.addEventListener("keydown", handleKeyPress);
+  //   return (() => {
+  //     document.removeEventListener("keydown", handleKeyPress);
+  //   })();
+  // }, [handleKeyPress]);
 
   const messageHTML = function (value) {
     const avatarClass = "message_userAvatar avatar";
