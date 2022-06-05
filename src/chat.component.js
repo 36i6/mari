@@ -19,14 +19,6 @@ export const Chat = () => {
   const [currentValue, setCurrentValue] = useState("");
   const [currentTipId, setCurrentTipId] = useState(0);
 
-  // const handleKeyPress = useCallback((e) => {
-  //   if (e.key === "Enter") {
-  //     if (document.getElementById("snd")) {
-  //       document.getElementById("snd").click();
-  //     }
-  //   }
-  // }, []);
-
   const scrollToBottom = () => {
     messageEndRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -362,6 +354,9 @@ export const Chat = () => {
                 value={currentValue}
                 ref={textareaRef}
                 disabled={true}
+                onChange={(e) => {
+                  setCurrentValue(e.target.value);
+                }}
               />
             )}
           </div>

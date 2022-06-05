@@ -155,8 +155,10 @@ html {
     textarea {
       resize: none;
       width: 80%;
-      padding: 0.5rem;
-      padding-bottom: 1rem;
+      padding: 0.5em;
+      padding-top: 0.2em;
+      min-height: 32px;
+      padding-bottom: 0.9em;
       font-size: larger;
       border: none;
       &::-webkit-scrollbar {
@@ -165,8 +167,7 @@ html {
       -ms-overflow-style: none;
       scrollbar-width: none;
       @media (max-width: 468px) {
-        padding: 0.4rem;
-        font-size: medium;
+        font-size: 10px;
       }
     }
   }
