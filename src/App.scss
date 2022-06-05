@@ -54,7 +54,9 @@ html {
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
-
+  @media (max-width: 768px) {
+    height: 420px;
+  }
   &-container {
     scroll-behavior: smooth;
     &::-webkit-scrollbar {
@@ -158,6 +160,9 @@ html {
       }
       -ms-overflow-style: none;
       scrollbar-width: none;
+      @media (max-width: 468px) {
+        padding: 1rem;
+      }
     }
   }
   &_variants {
