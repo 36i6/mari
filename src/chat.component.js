@@ -1,11 +1,4 @@
-import {
-  createRef,
-  React,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from "react";
+import { createRef, React, useEffect, useRef, useState } from "react";
 import ReactDOMServer from "react-dom/server";
 const parse = require("html-react-parser");
 const json = require("./aa.json");
@@ -353,9 +346,6 @@ export const Chat = () => {
             id="snd"
             disabled={false}
             onClick={!json["meet"].org[botMsg + 1] ? theNext : sendChosen}
-            onKeyDown={(e) => {
-              console.log(e);
-            }}
           >
             Отправить
           </button>
