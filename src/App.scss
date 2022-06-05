@@ -11,6 +11,12 @@
 html {
   scroll-behavior: smooth;
   font-size: larger;
+  @media (max-width: 768px) {
+    font-size: 10px;
+  }
+  @media (max-width: 333px) {
+    font-size: 7px;
+  }
 }
 
 .wrapper {
@@ -60,6 +66,7 @@ html {
       grid-template-areas: "botAvatar message userAvatar";
       margin-bottom: 1rem;
       position: relative;
+      white-space: nowrap;
       .avatar {
         // overflow: hidden;
         position: relative;
