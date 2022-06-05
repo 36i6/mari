@@ -1,7 +1,6 @@
 import "./App.css";
 import { Head } from "./header.component";
-import { Answer } from "./answer.component";
-import { Annotation } from "./annotation.component";
+import { Chat } from "./chat.component";
 
 function App() {
   return (
@@ -9,8 +8,7 @@ function App() {
       <div className="wrapper">
         <Head />
         <div className="content">
-          <Answer />
-          <Annotation />
+          <Chat />
         </div>
       </div>
     </div>
