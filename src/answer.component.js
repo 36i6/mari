@@ -1,16 +1,11 @@
-import {
-  Component,
-  createRef,
-  React,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createRef, React, useEffect, useRef, useState } from "react";
 import ReactDOMServer from "react-dom/server";
 const parse = require("html-react-parser");
 const json = require("./aa.json");
 
-export const Answer = (props) => {
+export const Answer = () => {
+  let inp;
+  let chat;
   let [state, setState] = useState("input");
   let [person, setPerson] = useState("meet");
   let [botMsg, setBotMsg] = useState(0);
@@ -20,8 +15,6 @@ export const Answer = (props) => {
   const [btnState, setBtnState] = useState(false);
   const [disabledBtn, setDisabledBtn] = useState(true);
   const [textareaChange, setTextareaChange] = useState(false);
-  let inp;
-  let chat;
   const messageEndRef = createRef();
   const textareaRef = useRef(null);
   const [currentValue, setCurrentValue] = useState("");
@@ -34,59 +27,52 @@ export const Answer = (props) => {
   };
 
   useEffect(() => {
-    console.log("useEffect setDesicion", desicion);
+    textareaRef.current.placeholder = "";
   }, [desicion]);
 
   useEffect(() => {
-    console.log("useEffect setCV", currentValue);
+    if (textareaRef.current) {
+      if (!textareaRef.current.disabled) {
+        textareaRef.current.value
+          ? (() => {
+              document.getElementById("snd").disabled = false;
+              textareaRef.current.placeholder = "";
+            })()
+          : (() => {
+              document.getElementById("snd").disabled = true;
+              textareaRef.current.placeholder = "Например, Андрей";
+            })();
+      }
+    }
+
     if (currentValue.includes("$")) {
-      console.log("useEffect setCV if $ in CV");
       setCurrentValue("");
       document.getElementById("#inpt").disabled = false;
       setBtnState(true);
       setDisabledBtn(false);
     }
     if (currentValue.includes("/v/")) {
-      console.log("useEffect setCV if /v/ in CV");
       setDesicion(currentValue);
       setCurrentValue(currentValue.replace("/v/", ""));
       setDisabledBtn(false);
     }
     if (currentValue.includes("/e/")) {
-      console.log("useEffect setCV if /e/ in CV");
       // setDesicion(currentValue);
-      console.log(desicion);
       setCurrentValue(currentValue.replace("/e/", ""));
       setDisabledBtn(false);
     }
-    // if (currentValue.includes("/t/")) {
-    //   console.log("useEffect setCV if /e/ in CV");
-    //   setDesicion(currentValue);
-    //   setCurrentValue(currentValue.replace("/t/", ""));
-    //   setDisabledBtn(false);
-    // }
   }, [currentValue]);
 
   useEffect(() => {
-    console.log("useEffect next=>sendByBot");
     sendByBot(botMsg);
     scrollToBottom();
   }, [botMsg]);
-
-  useEffect(() => {
-    console.log("useEffect setPerson");
-    scrollToBottom();
-  }, [person]);
 
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "0px";
       const scrollHeight = textareaRef.current.scrollHeight - 15;
       textareaRef.current.style.height = scrollHeight + "px";
-      if (!textareaRef.current.value) {
-        // console.log("VALUE", textareaRef.current.value);
-        // document.getElementById("snd").disabled = true;
-      }
     }
   }, [currentValue]);
 
@@ -108,7 +94,6 @@ export const Answer = (props) => {
 
   const botMessageHTML = function (value) {
     setState("input");
-    console.log('botMessageHTML setState("input")');
     const avatarClass = "message_botAvatar avatar";
     const messageClass = "message_botMessage";
     if (value.includes("/$/")) {
@@ -131,7 +116,6 @@ export const Answer = (props) => {
     if (value.includes("/@/")) {
       value = value.replace("/@/", "");
       setState("choose");
-      console.log("setState choose");
       setVars(vars + 1);
       scrollToBottom();
     }
@@ -140,7 +124,6 @@ export const Answer = (props) => {
       value = value.replace("/e/", "");
       setCurrentValue(desicion);
       setDisabledBtn(false);
-      console.log("value includes /e/, setCurrentValue(desicion)");
       scrollToBottom();
     }
 
@@ -155,22 +138,11 @@ export const Answer = (props) => {
           "beforeend",
           tipHTML(json[person].referredTips[currentTipId])
         );
-        // scrollToBottom();
-        console.log("sendChosen send tip");
         setCurrentTipId(currentTipId + 1);
       }, 500);
       scrollToBottom();
     }
 
-    // if (value.includes("/>/")) {
-    //   value = value.replace("/>/", "");
-    //   person === "meet" ? setPerson("sobes") : setPerson("meet");
-    //   setVars(-1);
-    //   setDesicion("");
-    //   setCurrentValue("");
-    //   setBotMsg(0);
-    //   scrollToBottom();
-    // }
     if (value.includes("<strong>")) {
       value = parse(value);
     }
@@ -208,11 +180,6 @@ export const Answer = (props) => {
   };
 
   const sendByBot = function (botMsg) {
-    if (
-      json[person].org[botMsg] === json[person].org[json[person].org.length - 1]
-    ) {
-      console.log("Strannaya usloviya");
-    }
     chat = document.getElementById("#chat");
     if (botMsg === 0) {
       chat.innerHTML = "";
@@ -223,9 +190,6 @@ export const Answer = (props) => {
         "beforeend",
         botMessageHTML(json[person].org[botMsg])
       );
-      console.log(
-        "sendByBot setTimeout send botMessageHTML(json[person].org[botMSG])"
-      );
       scrollToBottom();
       setTimeout(() => {
         if (botMsg === 0) {
@@ -233,23 +197,12 @@ export const Answer = (props) => {
           setDisabledBtn(false);
         }
         if (
-          !json[person].userMessage[
+          json[person].userMessage[
             json[person].userMessage.indexOf(desicion) + 1
           ]
         ) {
-          console.log(
-            "sendByBot setTimeout^^ no next userMessage index of desicion"
-          );
-        } else {
           if (!json[person].org[botMsg].includes("/&/")) {
-            console.log(
-              "sendByBot setTimeout^^ json[person].org[botMsg] no includes /&/"
-            );
             if (!json[person].org[botMsg - 1].includes("/@/")) {
-              console.log(
-                "sendByBot setTimeout^^ json[person].org[botMsg - 1] no includes /@/",
-                state
-              );
               if (state === "input") {
                 setCurrentValue(
                   json[person].userMessage[
@@ -258,10 +211,6 @@ export const Answer = (props) => {
                 );
                 setDisabledBtn(false);
               }
-
-              console.log(
-                "sendByBot setTimeout^^ setCurrentValue json[person].userMessage[desicion + 1]"
-              );
             }
           }
         }
@@ -274,26 +223,20 @@ export const Answer = (props) => {
     setDisabledBtn(true);
     document.getElementById("snd").disabled = true;
     setState("input");
-    console.log('sendAnswer setState("input")');
     inp = document.getElementById("#inpt");
     if (!inp.disabled) {
       inp.disabled = true;
       setCurrentValue("");
       setBtnState(false);
-      setUsername(inp.value + "Аноним");
+
+      setUsername(inp.value);
       setDesicion("$");
-      console.log('sendAnswer disabled input setDesicion("$")');
     } else {
-      console.log();
       if (desicion.includes("/v/")) {
         setCurrentValue("");
-        console.log('sendAnswer enabled desicion includes /v/ setCV("")');
       } else {
         setDesicion(inp.value);
         setCurrentValue("");
-        console.log(
-          "sendAnswer enabled desicion !includes /v/ setDesicion(inp.value)"
-        );
       }
     }
 
@@ -309,15 +252,6 @@ export const Answer = (props) => {
             tipHTML(json[person].referredTips[currentTipId])
           );
           scrollToBottom();
-          // console.log("sendChosen send tip");
-          // if (currentTipId === json[person].referredTips.length - 1) {
-          //   chat.insertAdjacentHTML(
-          //     "beforeend",
-          //     primingHTML(json[person].priming[0])
-          //   );
-          // } else {
-
-          // }
           setCurrentTipId(currentTipId + 1);
         }, 500);
       } else {
@@ -325,12 +259,7 @@ export const Answer = (props) => {
         scrollToBottom();
       }
     }
-
-    console.log("sendAnswer send inp.value");
-    scrollToBottom();
-
     setBotMsg(botMsg + 1);
-    console.log("sendAnswer setBotMsg(botmsg + 1)");
     scrollToBottom();
   };
 
@@ -339,29 +268,22 @@ export const Answer = (props) => {
     document.getElementById("snd").disabled = true;
     inp = document.querySelector('input[name="name"]:checked');
     const tip = json[person].tips[vars][inp.id - 1];
-    console.log("sendChosen set tip to json[person].tips[vars][idChosen]");
     setState("input");
     setCurrentValue("");
     chat = document.getElementById("#chat");
     chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
-    console.log("sendChosen send messageHTML(chosenValue)");
     scrollToBottom();
     if (!json[person].user[0].includes(inp.value)) {
       setTimeout(() => {
         chat.insertAdjacentHTML("beforeend", tipHTML(tip));
         scrollToBottom();
-        console.log("sendChosen send tip");
       }, 1000);
       setTimeout(() => {
         if (vars === json[person].tips.length - 1) {
           setVars(-1);
-          console.log("sendChosen setTimeout last vars setVars-1");
           setBotMsg(botMsg + 1);
-          console.log("sendChosen setTimeout last vars setBotMsg+1");
           scrollToBottom();
-          // setState("input");
         } else {
-          console.log("sendChosen setTimeout !last vars");
           setBotMsg(botMsg + 1);
           scrollToBottom();
         }
@@ -370,10 +292,7 @@ export const Answer = (props) => {
       setBotMsg(botMsg + 1);
       scrollToBottom();
     }
-
     scrollToBottom();
-    // setState("input");
-    // console.log('sendChosen setState("input")');
   };
 
   const theNext = function () {
@@ -427,7 +346,6 @@ export const Answer = (props) => {
                 disabled={true}
                 onChange={(e) => {
                   setCurrentValue(e.target.value);
-                  console.log("e target", textareaChange);
                 }}
               />
             )}
