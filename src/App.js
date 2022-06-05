@@ -4,11 +4,11 @@ import { Chat } from "./chat.component";
 
 function App() {
   return (
-    <div className="App">
+    <div>
       <div className="wrapper">
         <Head />
         <div className="content">
-          <Chat />
+          <Chat className="App" />
         </div>
       </div>
     </div>

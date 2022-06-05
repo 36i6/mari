@@ -61,6 +61,7 @@ html {
       display: none;
     }
     .message {
+      overflow: hidden;
       display: grid;
       grid-template-columns: auto 1fr auto;
       grid-template-areas: "botAvatar message userAvatar";
@@ -88,7 +89,7 @@ html {
         overflow: hidden;
         overflow-wrap: break-word;
         white-space: pre-line;
-
+        animation: append-animate 0.1s ease;
         &-user {
           grid-column-start: 2;
           grid-column-end: 3;
@@ -127,6 +128,17 @@ html {
         grid-area: userAvatar;
       }
     }
+  }
+}
+
+@keyframes append-animate {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 

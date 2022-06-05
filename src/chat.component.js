@@ -1,4 +1,11 @@
-import { createRef, React, useEffect, useRef, useState } from "react";
+import {
+  createRef,
+  React,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import ReactDOMServer from "react-dom/server";
 const parse = require("html-react-parser");
 const json = require("./aa.json");
@@ -19,6 +26,14 @@ export const Chat = () => {
   const [currentValue, setCurrentValue] = useState("");
   const [currentTipId, setCurrentTipId] = useState(0);
 
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === "Enter") {
+      if (document.getElementById("snd")) {
+        document.getElementById("snd").click();
+      }
+    }
+  }, []);
+
   const scrollToBottom = () => {
     messageEndRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -26,7 +41,11 @@ export const Chat = () => {
   };
 
   useEffect(() => {
-    textareaRef.current.placeholder = "";
+    if (textareaRef.current) {
+      if (textareaRef.current.placeholder) {
+        textareaRef.current.placeholder = "";
+      }
+    }
   }, [desicion]);
 
   useEffect(() => {
@@ -74,6 +93,13 @@ export const Chat = () => {
       textareaRef.current.style.height = scrollHeight + "px";
     }
   }, [currentValue]);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return (() => {
+      document.removeEventListener("keydown", handleKeyPress);
+    })();
+  }, [handleKeyPress]);
 
   const messageHTML = function (value) {
     const avatarClass = "message_userAvatar avatar";
@@ -327,6 +353,9 @@ export const Chat = () => {
             id="snd"
             disabled={false}
             onClick={!json["meet"].org[botMsg + 1] ? theNext : sendChosen}
+            onKeyDown={(e) => {
+              console.log(e);
+            }}
           >
             Отправить
           </button>
@@ -343,9 +372,6 @@ export const Chat = () => {
                 value={currentValue}
                 ref={textareaRef}
                 disabled={true}
-                onChange={(e) => {
-                  setCurrentValue(e.target.value);
-                }}
               />
             )}
           </div>
