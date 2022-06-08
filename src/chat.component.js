@@ -18,11 +18,35 @@ export const Chat = () => {
   const textareaRef = useRef(null);
   const [currentValue, setCurrentValue] = useState("");
   const [currentTipId, setCurrentTipId] = useState(0);
+  const [curPriming, setCurPriming] = useState(0);
+  const [end, setEnd] = useState(false);
 
   const scrollToBottom = () => {
     messageEndRef.current?.scrollIntoView({
       behavior: "smooth",
     });
+  };
+
+  const tipHTML = function (value) {
+    return ReactDOMServer.renderToString(
+      <div className="tip">
+        <p>{value}</p>
+      </div>
+    );
+  };
+
+  const primingHTML = function (value) {
+    const title = value.slice(0, value.indexOf("%"));
+    value = value.slice(value.indexOf("%") + 1, value.length);
+    if (value.includes("<a href")) {
+      value = parse(value);
+    }
+    return ReactDOMServer.renderToString(
+      <div className="priming">
+        <p className="priming_title">{title}</p>
+        <p className="priming_body">{value}</p>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -64,6 +88,16 @@ export const Chat = () => {
       setCurrentValue(currentValue.replace("/e/", ""));
       setDisabledBtn(false);
     }
+    if (currentValue.includes("/t/")) {
+      // setDesicion(currentValue);
+      if (document.getElementById("#inpt")) {
+        document.getElementById("#inpt").value = document
+          .getElementById("#inpt")
+          .value.replace("/t/", "");
+      }
+
+      setDisabledBtn(false);
+    }
   }, [currentValue]);
 
   useEffect(() => {
@@ -78,13 +112,6 @@ export const Chat = () => {
       textareaRef.current.style.height = scrollHeight + "px";
     }
   }, [currentValue]);
-
-  // useEffect(() => {
-  //   document.addEventListener("keydown", handleKeyPress);
-  //   return (() => {
-  //     document.removeEventListener("keydown", handleKeyPress);
-  //   })();
-  // }, [handleKeyPress]);
 
   const messageHTML = function (value) {
     const avatarClass = "message_userAvatar avatar";
@@ -113,47 +140,58 @@ export const Chat = () => {
       value = value.replace("/</", "");
       document.getElementById("#inpt").disabled = true;
       setBtnState(false);
-      scrollToBottom();
     }
 
     if (value.includes("/&/")) {
       value = value.replace("/&/", "");
       setCurrentValue("");
       setDisabledBtn(false);
-      scrollToBottom();
     }
 
     if (value.includes("/@/")) {
       value = value.replace("/@/", "");
       setState("choose");
       setVars(vars + 1);
-      scrollToBottom();
     }
 
     if (value.includes("/e/")) {
       value = value.replace("/e/", "");
       setCurrentValue(desicion);
       setDisabledBtn(false);
-      scrollToBottom();
     }
 
     if (value.includes("/p/")) {
-      return primingHTML(json[person].priming[0]);
+      setTimeout(() => {
+        setCurPriming(curPriming + 1);
+        setTimeout(() => {
+          // setBotMsg(botMsg + 1);
+          setCurrentValue("");
+          setDisabledBtn(false);
+        }, 500);
+      }, 500);
+      return primingHTML(json[person].priming[curPriming]);
+    }
+
+    if (value.includes("/dd/")) {
+      setEnd(true);
+      return primingHTML(json[person].priming[json[person].priming.length - 1]);
     }
 
     if (value.includes("/t/")) {
       value = value.replace("/t/", "");
-      setTimeout(() => {
-        chat.insertAdjacentHTML(
-          "beforeend",
-          tipHTML(json[person].referredTips[currentTipId])
-        );
-        setCurrentTipId(currentTipId + 1);
-      }, 500);
+
+      chat.insertAdjacentHTML(
+        "beforeend",
+        tipHTML(json[person].referredTips[currentTipId])
+      );
+      setCurrentTipId(currentTipId + 1);
       scrollToBottom();
     }
 
     if (value.includes("<strong>")) {
+      value = parse(value);
+    }
+    if (value.includes("<a href")) {
       value = parse(value);
     }
     return ReactDOMServer.renderToString(
@@ -172,28 +210,10 @@ export const Chat = () => {
     );
   };
 
-  const tipHTML = function (value) {
-    return ReactDOMServer.renderToString(
-      <div className="tip">
-        <p>{value}</p>
-      </div>
-    );
-  };
-
-  const primingHTML = function (value) {
-    return ReactDOMServer.renderToString(
-      <div className="priming">
-        <p className="priming_title">«Примечания»</p>
-        <p className="priming_body">{value}</p>
-      </div>
-    );
-  };
-
   const sendByBot = function (botMsg) {
     chat = document.getElementById("#chat");
     if (botMsg === 0) {
       chat.innerHTML = "";
-      scrollToBottom();
     }
     setTimeout(() => {
       chat.insertAdjacentHTML(
@@ -224,9 +244,8 @@ export const Chat = () => {
             }
           }
         }
-      }, 500);
+      }, 350);
     }, 500);
-    scrollToBottom();
   };
 
   const sendAnswer = function () {
@@ -261,16 +280,17 @@ export const Chat = () => {
             "beforeend",
             tipHTML(json[person].referredTips[currentTipId])
           );
-          scrollToBottom();
           setCurrentTipId(currentTipId + 1);
-        }, 500);
+          scrollToBottom();
+        }, 350);
       } else {
         chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
         scrollToBottom();
       }
     }
-    setBotMsg(botMsg + 1);
-    scrollToBottom();
+    setTimeout(() => {
+      setBotMsg(botMsg + 1);
+    }, 500);
   };
 
   const sendChosen = function () {
@@ -287,31 +307,27 @@ export const Chat = () => {
       setTimeout(() => {
         chat.insertAdjacentHTML("beforeend", tipHTML(tip));
         scrollToBottom();
-      }, 1000);
+      }, 350);
       setTimeout(() => {
         if (vars === json[person].tips.length - 1) {
           setVars(-1);
           setBotMsg(botMsg + 1);
-          scrollToBottom();
         } else {
           setBotMsg(botMsg + 1);
-          scrollToBottom();
         }
-      }, 1000);
+      }, 500);
     } else {
       setBotMsg(botMsg + 1);
-      scrollToBottom();
     }
-    scrollToBottom();
   };
 
   const theNext = function () {
     person === "meet" ? setPerson("sobes") : setPerson("meet");
+    setEnd(false);
     setVars(-1);
     setDesicion("");
     setCurrentValue("");
     setBotMsg(0);
-    scrollToBottom();
   };
 
   const inputOrChoice = (state) => {
@@ -319,9 +335,24 @@ export const Chat = () => {
       return (
         <div className="input_variants">
           <div className="variants_title">
-            <span>
-              <strong>Выберите, пожалуйста, один ответ:</strong>
-            </span>
+            {json[person].user[vars][1].includes("«жертвы»") ? (
+              <span>
+                <p>Ответьте, пожалуйста, на вопрос:</p>
+                <br />
+                <p>
+                  <strong>
+                    Зачем интервьюер может спросить про особенно сложный случай?
+                  </strong>
+                </p>
+                <br />
+                <br />
+                <p>Выберите, пожалуйста, один ответ:</p>
+              </span>
+            ) : (
+              <span>
+                <strong>Выберите, пожалуйста, один ответ:</strong>
+              </span>
+            )}
           </div>
           <div className="variants_values">
             {json[person].user[vars].map((v, i) => {
@@ -347,18 +378,16 @@ export const Chat = () => {
       return (
         <>
           <div className="input_input">
-            {!json[person].org[botMsg + 1] ? null : (
-              <textarea
-                id="#inpt"
-                className="a"
-                value={currentValue}
-                ref={textareaRef}
-                disabled={true}
-                onChange={(e) => {
-                  setCurrentValue(e.target.value);
-                }}
-              />
-            )}
+            <textarea
+              id="#inpt"
+              className="a"
+              value={currentValue}
+              ref={textareaRef}
+              disabled={true}
+              onChange={(e) => {
+                setCurrentValue(e.target.value);
+              }}
+            />
           </div>
           <button
             className="send"
@@ -368,7 +397,7 @@ export const Chat = () => {
               disabledBtn ? !!json[person].org[botMsg + 1] : disabledBtn
             }
           >
-            {btnState ? "Отправить" : "Продолжить"}
+            {!end ? (btnState ? "Отправить" : "Продолжить") : "Пройти заново"}
           </button>
         </>
       );
