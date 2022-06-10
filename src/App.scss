@@ -20,7 +20,8 @@ html {
 }
 
 a {
-  color: #ea5a11;
+  text-decoration: underline;
+  font-weight: bolder;
 }
 
 .wrapper {
@@ -84,7 +85,7 @@ a {
           // padding-top: 0.5rem;
           border-radius: 50%;
           position: absolute;
-          top: 0.5em;
+          top: 0.4em;
         }
       }
       .msg {
@@ -235,9 +236,6 @@ a {
     margin-bottom: 2rem;
     font-size: 1.1em;
     line-height: 1.3rem;
-    & a {
-      color: rgb(255, 0, 0);
-    }
   }
 }
 
