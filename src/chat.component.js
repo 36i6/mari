@@ -298,12 +298,13 @@ export const Chat = () => {
     document.getElementById("snd").disabled = true;
     inp = document.querySelector('input[name="name"]:checked');
     const tip = json[person].tips[vars][inp.id - 1];
+    console.log("tip", vars, tip);
     setState("input");
     setCurrentValue("");
     chat = document.getElementById("#chat");
     chat.insertAdjacentHTML("beforeend", messageHTML(inp.value));
     scrollToBottom();
-    if (!json[person].user[0].includes(inp.value)) {
+    if (!json["meet"].user[0].includes(inp.value)) {
       setTimeout(() => {
         chat.insertAdjacentHTML("beforeend", tipHTML(tip));
         scrollToBottom();
