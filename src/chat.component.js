@@ -14,6 +14,7 @@ export const Chat = () => {
   const [vars, setVars] = useState(-1);
   const [btnState, setBtnState] = useState(false);
   const [disabledBtn, setDisabledBtn] = useState(true);
+  const [disabledSendBtn, setDisabledSendBtn] = useState(true);
   const messageEndRef = createRef();
   const textareaRef = useRef(null);
   const [currentValue, setCurrentValue] = useState("");
@@ -47,6 +48,10 @@ export const Chat = () => {
         <p className="priming_body">{value}</p>
       </div>
     );
+  };
+
+  const switchButton = function () {
+    setDisabledSendBtn(false);
   };
 
   useEffect(() => {
@@ -298,7 +303,6 @@ export const Chat = () => {
     document.getElementById("snd").disabled = true;
     inp = document.querySelector('input[name="name"]:checked');
     const tip = json[person].tips[vars][inp.id - 1];
-    console.log("tip", vars, tip);
     setState("input");
     setCurrentValue("");
     chat = document.getElementById("#chat");
@@ -326,6 +330,8 @@ export const Chat = () => {
     person === "meet" ? setPerson("sobes") : setPerson("meet");
     setEnd(false);
     setVars(-1);
+    setCurrentTipId(0);
+    setCurPriming(0);
     setDesicion("");
     setCurrentValue("");
     setBotMsg(0);
@@ -359,7 +365,13 @@ export const Chat = () => {
             {json[person].user[vars].map((v, i) => {
               return (
                 <div className="value">
-                  <input type="radio" id={i + 1} name="name" value={v} />
+                  <input
+                    type="radio"
+                    id={i + 1}
+                    name="name"
+                    value={v}
+                    onChange={switchButton}
+                  />
                   <label htmlFor={i + 1}>{v}</label>
                 </div>
               );
@@ -368,7 +380,7 @@ export const Chat = () => {
           <button
             className="send"
             id="snd"
-            disabled={false}
+            disabled={disabledSendBtn}
             onClick={!json["meet"].org[botMsg + 1] ? theNext : sendChosen}
           >
             Отправить
@@ -393,7 +405,9 @@ export const Chat = () => {
           <button
             className="send"
             id="snd"
-            onClick={!json[person].org[botMsg + 1] ? theNext : sendAnswer}
+            onClick={
+              !json[person].org[botMsg + 1] || end ? theNext : sendAnswer
+            }
             disabled={
               disabledBtn ? !!json[person].org[botMsg + 1] : disabledBtn
             }
