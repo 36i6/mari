@@ -327,14 +327,19 @@ export const Chat = () => {
   };
 
   const theNext = function () {
-    person === "meet" ? setPerson("sobes") : setPerson("meet");
-    setEnd(false);
-    setVars(-1);
-    setCurrentTipId(0);
-    setCurPriming(0);
-    setDesicion("");
-    setCurrentValue("");
-    setBotMsg(0);
+    if (!end) {
+      person === "meet" ? setPerson("sobes") : setPerson("meet");
+      setEnd(false);
+      setVars(-1);
+      setCurrentTipId(0);
+      setCurPriming(0);
+      setDesicion("");
+      setCurrentValue("");
+      setBotMsg(0);
+    } else {
+      // eslint-disable-next-line no-restricted-globals
+      location.href = "https://altshu.com/career_practicum";
+    }
   };
 
   const inputOrChoice = (state) => {
@@ -412,7 +417,11 @@ export const Chat = () => {
               disabledBtn ? !!json[person].org[botMsg + 1] : disabledBtn
             }
           >
-            {!end ? (btnState ? "Отправить" : "Продолжить") : "Пройти заново"}
+            {!end
+              ? btnState
+                ? "Отправить"
+                : "Продолжить"
+              : "Перейти в практикум"}
           </button>
         </>
       );
